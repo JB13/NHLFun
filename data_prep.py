@@ -24,6 +24,7 @@ Index(['Unnamed: 0', 'Game_Id', 'Date', 'Period', 'Event', 'Description',
 if __name__ == "__main__":
     # Read in the data
     path = r"C:\Users\JoshG\hockey_scraper_data\csvs\nhl_pbp_20222023.csv"
+    path = r"C:\Users\JoshG\hockey_scraper_data\csvs\nhl_pbp_20232024.csv"
     df = pd.read_csv(path)
 
     # print the column names of df
@@ -47,7 +48,7 @@ if __name__ == "__main__":
     print(goal_shot_rows["Event"])
 
     # save the new dataframe to a csv
-    goal_shot_rows.to_csv("goal_shot_rows.csv", index=False)
+    goal_shot_rows.to_csv("2023-2024_shots.csv", index=False)
 
     # create a subset of the dataframe, with only the 'Period', 'Seconds_Elapsed', 'Strength', 'Type', 'xC', 'yC'
     # 'prev_Event', 'prev_Period', 'prev_Seconds_Elapsed', 'prev_Strength', 'prev_Type', 'prev_xC', 'prev_yC'
