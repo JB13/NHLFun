@@ -22,8 +22,10 @@ Index(['Unnamed: 0', 'Game_Id', 'Date', 'Period', 'Event', 'Description',
 """
 
 if __name__ == "__main__":
+    
+    print("Hello World")
     # Read in the data
-    path = r"C:\Users\JoshG\hockey_scraper_data\csvs\nhl_pbp_20222023.csv"
+#     path = r"C:\Users\JoshG\hockey_scraper_data\csvs\nhl_pbp_20222023.csv"
     path = r"C:\Users\JoshG\hockey_scraper_data\csvs\nhl_pbp_20232024.csv"
     df = pd.read_csv(path)
 
@@ -46,6 +48,7 @@ if __name__ == "__main__":
 
 
     print(goal_shot_rows["Event"])
+
 
     # save the new dataframe to a csv
     goal_shot_rows.to_csv("2023-2024_shots.csv", index=False)
