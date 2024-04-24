@@ -20,6 +20,92 @@ Index(['Unnamed: 0', 'Game_Id', 'Date', 'Period', 'Event', 'Description',
        'Away_Coach'],
 
 """
+def create_input_data_from_csv(path_to_csv):
+    df = pd.read_csv(path_to_csv)
+
+    print(len(df))
+    print("HELLO WORLD 2")
+    
+    # get list of ilocs of rows where the 'Event' column is 'GOAL or SHOT'
+    goal_shot_rows = df.loc[df['Event'].isin(['GOAL', 'SHOT'])]
+
+    print(goal_shot_rows["Event"])
+
+    # shift the dataframe by 1 row
+    shifted_df = df.shift(1)
+    shifted_df.columns = ['prev_' + name for name in df.columns]
+
+    # combine goal_shot_rows with shifted_df, but using rows from goal_shot_rows
+    goal_shot_rows = pd.concat([goal_shot_rows, shifted_df.loc[goal_shot_rows.index]], axis=1)
+
+    goal_shot_rows = goal_shot_rows[goal_shot_rows['Period'] != 0]
+    goal_shot_rows = goal_shot_rows[goal_shot_rows['Period'] != 5]
+
+    val_input_data = goal_shot_rows[['Event', 'Period', 'Seconds_Elapsed', 'Strength', 'Type', 'xC', 'yC', 'prev_Event', 'prev_Period', 'prev_Seconds_Elapsed', 'prev_Strength', 'prev_Type', 'prev_xC', 'prev_yC']]
+    val_result_data = goal_shot_rows['Event']
+    val_result_data = val_result_data.apply(lambda x: 1 if x == "GOAL" else 0)
+
+    val_input_data = val_input_data.drop(columns=['Event'])
+
+
+    # Split out the data between numeric values (can carry forward) and categorical values (need to be turned into binary columns)
+    val_input_data_numeric = val_input_data[['Period', 'Seconds_Elapsed', 'xC', 'yC', 'prev_Seconds_Elapsed', 'prev_xC', 'prev_yC']]
+    val_input_data_categorical = pd.DataFrame()
+
+    for column in ['Strength', 'Type', 'prev_Event']:
+        dummy_columns = pd.get_dummies(val_input_data[column])
+        val_input_data_categorical = pd.concat([dummy_columns, val_input_data_categorical], axis=1)
+
+    for column in ['prev_Event', 'prev_Strength', 'prev_Type']:
+        dummy_columns = pd.get_dummies(val_input_data[column])
+        
+        # rename all columns with a prefix of "prev_"
+        dummy_columns.columns = ['prev_' + str(col) for col in dummy_columns.columns]
+
+        val_input_data_categorical = pd.concat([val_input_data_categorical, dummy_columns], axis=1)
+        
+        # change all True/False to 1/0
+        val_input_data_categorical = val_input_data_categorical.applymap(lambda x: 1 if x == True else 0)
+
+        # combine the two dataframes
+        val_input_data_combined = pd.concat([val_input_data_numeric, val_input_data_categorical], axis=1)
+
+        #set val_input_data2 to be all floats
+        val_input_data_combined = val_input_data_combined.astype(float)
+
+
+    columns = ['Period', 'Seconds_Elapsed', 'xC', 'yC', 'prev_Seconds_Elapsed',
+            'prev_xC', 'prev_yC', 'BLOCK', 'CHL', 'DELPEN', 'FAC', 'GIVE', 'HIT',
+            'MISS', 'PENL', 'SHOT', 'STOP', 'TAKE', 'BACKHAND', 'DEFLECTED',
+            'SLAP SHOT', 'SNAP SHOT', 'TIP-IN', 'WRAP-AROUND', 'WRIST SHOT', '0x0',
+            '3x3', '3x4', '3x5', '4x3', '4x4', '4x5', '5x3', '5x4', '5x5', '6x5',
+            'prev_BLOCK', 'prev_CHL', 'prev_DELPEN', 'prev_FAC', 'prev_GIVE',
+            'prev_HIT', 'prev_MISS', 'prev_PENL', 'prev_SHOT', 'prev_STOP',
+            'prev_TAKE', 'prev_0x5', 'prev_3x3', 'prev_3x4', 'prev_3x5', 'prev_4x3',
+            'prev_4x4', 'prev_4x5', 'prev_5x3', 'prev_5x4', 'prev_5x5', 'prev_5x6',
+            'prev_BACKHAND', 'prev_DEFLECTED',
+            'prev_PS-Covering puck in crease(0 min)',
+            'prev_PS-Goalkeeper displaced net(0 min)',
+            'prev_PS-Holding on breakaway(0 min)',
+            'prev_PS-Hooking on breakaway(0 min)',
+            'prev_PS-Slash on breakaway(0 min)',
+            'prev_PS-Throw object at puck(0 min)',
+            'prev_PS-Tripping on breakaway(0 min)', 'prev_SLAP SHOT',
+            'prev_SNAP SHOT', 'prev_TIP-IN', 'prev_WRAP-AROUND', 'prev_WRIST SHOT']
+
+    # For each column in input_data_combined, check if it exists in val_input_data_combined, if not add it as all 0s
+    for column in columns:
+        if column not in val_input_data_combined.columns:
+                val_input_data_combined[column] = 0
+
+    # reduce val_input_data_combined to have the same columns as input_data_combined
+    val_input_data_combined = val_input_data_combined[columns]
+
+    # change all NaN numbers to 0
+    val_input_data_combined = val_input_data_combined.fillna(0)
+
+    return val_input_data_combined, val_result_data
+
 
 if __name__ == "__main__":
     
